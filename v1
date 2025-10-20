@@ -1,0 +1,115 @@
+-- GhoulzHub – Auto Coins (Stable / No TP)
+repeat task.wait() until game:IsLoaded()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- GUI principale
+local gui = Instance.new("ScreenGui")
+gui.Name = "GhoulzHubCoins"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 280, 0, 160)
+main.Position = UDim2.new(0.5, -140, 0.5, -80)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.BorderColor3 = Color3.fromRGB(255, 0, 0)
+main.Active = true
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+title.Text = "Ghoulz Hub"
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.new(1, 1, 1)
+
+local toggleBtn = Instance.new("TextButton", main)
+toggleBtn.Size = UDim2.new(0, 200, 0, 40)
+toggleBtn.Position = UDim2.new(0.5, -100, 0, 50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+toggleBtn.Text = "Auto Coins: OFF"
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextScaled = true
+
+local closeBtn = Instance.new("TextButton", main)
+closeBtn.Size = UDim2.new(0, 200, 0, 35)
+closeBtn.Position = UDim2.new(0.5, -100, 0, 100)
+closeBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+closeBtn.Text = "Fermer"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextScaled = true
+
+-- 📱 Draggable pour mobile et PC
+local UserInputService = game:GetService("UserInputService")
+local dragging = false
+local dragStart, startPos
+main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+	end
+end)
+main.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+		local delta = input.Position - dragStart
+		main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+------------------------------------------------------------
+-- ⚙️ Auto Coins (sans TP)
+------------------------------------------------------------
+local collecting = false
+local collectThread
+local collected = {} -- éviter de retoucher la même pièce
+
+local function collectLoop()
+	while collecting do
+		local char = player.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local hrp = char.HumanoidRootPart
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("TouchTransmitter") and obj.Parent and obj.Parent:IsA("BasePart") and not collected[obj.Parent] then
+					collected[obj.Parent] = true
+					pcall(function()
+						firetouchinterest(hrp, obj.Parent, 0)
+						firetouchinterest(hrp, obj.Parent, 1)
+					end)
+				end
+			end
+		end
+		task.wait(1.5) -- un petit délai pour éviter le spam
+	end
+end
+
+-- 🎚 Bouton ON/OFF
+toggleBtn.MouseButton1Click:Connect(function()
+	collecting = not collecting
+	if collecting then
+		toggleBtn.Text = "Auto Coins: ON"
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+		collected = {}
+		collectThread = task.spawn(collectLoop)
+	else
+		toggleBtn.Text = "Auto Coins: OFF"
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	end
+end)
+
+-- 🔴 Bouton Fermer
+closeBtn.MouseButton1Click:Connect(function()
+	collecting = false
+	if collectThread then
+		task.cancel(collectThread)
+	end
+	gui:Destroy()
+end)
