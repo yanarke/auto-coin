@@ -1,8 +1,16 @@
--- GhoulzHub – Auto Coins (Stable / No TP)
+-- GhoulzHub – Auto Coins + Auto Dummy
 repeat task.wait() until game:IsLoaded()
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
+local map = workspace:WaitForChild("MAP")
+local event = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
+
+-- Flags
+local autoCoins = false
+local autoDummy = false
 
 -- GUI principale
 local gui = Instance.new("ScreenGui")
@@ -11,8 +19,8 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 280, 0, 160)
-main.Position = UDim2.new(0.5, -140, 0.5, -80)
+main.Size = UDim2.new(0, 280, 0, 210) -- agrandi pour bouton supplémentaire
+main.Position = UDim2.new(0.5, -140, 0.5, -105)
 main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 main.BorderColor3 = Color3.fromRGB(255, 0, 0)
 main.Active = true
@@ -25,18 +33,30 @@ title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.TextColor3 = Color3.new(1, 1, 1)
 
-local toggleBtn = Instance.new("TextButton", main)
-toggleBtn.Size = UDim2.new(0, 200, 0, 40)
-toggleBtn.Position = UDim2.new(0.5, -100, 0, 50)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-toggleBtn.Text = "Auto Coins: OFF"
-toggleBtn.TextColor3 = Color3.new(1, 1, 1)
-toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextScaled = true
+-- Bouton Auto Coins
+local toggleCoinsBtn = Instance.new("TextButton", main)
+toggleCoinsBtn.Size = UDim2.new(0, 200, 0, 40)
+toggleCoinsBtn.Position = UDim2.new(0.5, -100, 0, 50)
+toggleCoinsBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+toggleCoinsBtn.Text = "Auto Coins: OFF"
+toggleCoinsBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleCoinsBtn.Font = Enum.Font.GothamBold
+toggleCoinsBtn.TextScaled = true
 
+-- Bouton Auto Dummy
+local toggleDummyBtn = Instance.new("TextButton", main)
+toggleDummyBtn.Size = UDim2.new(0, 200, 0, 40)
+toggleDummyBtn.Position = UDim2.new(0.5, -100, 0, 100)
+toggleDummyBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+toggleDummyBtn.Text = "Auto Dummy: OFF"
+toggleDummyBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleDummyBtn.Font = Enum.Font.GothamBold
+toggleDummyBtn.TextScaled = true
+
+-- Bouton Fermer
 local closeBtn = Instance.new("TextButton", main)
 closeBtn.Size = UDim2.new(0, 200, 0, 35)
-closeBtn.Position = UDim2.new(0.5, -100, 0, 100)
+closeBtn.Position = UDim2.new(0.5, -100, 0, 155)
 closeBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
 closeBtn.Text = "Fermer"
 closeBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -44,7 +64,6 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextScaled = true
 
 -- Draggable
-local UserInputService = game:GetService("UserInputService")
 local dragging = false
 local dragStart, startPos
 main.InputBegan:Connect(function(input)
@@ -66,45 +85,75 @@ UserInputService.InputEnded:Connect(function(input)
 	end
 end)
 
-------------------------------------------------------------
--- ⚙️ Auto Coins (Stable)
-------------------------------------------------------------
-local collecting = false
-local collectThread
+-- Dossiers de dummies
+local folders = {
+    map:WaitForChild("5k_dummies"),
+    map:WaitForChild("dummies")
+}
 
-local function collectLoop()
-	while collecting do
-		local char = player.Character
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			local hrp = char.HumanoidRootPart
-			local coinEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("CoinEvent")
-			-- FireServer pour collecter
-			pcall(function()
-				coinEvent:FireServer()
-			end)
-		end
-		task.wait(1) -- délai pour éviter le spam
-	end
+-- Fonction TP aléatoire sur un dummy de 5k_dummies
+local function tpRandomDummy()
+    local folder = map:WaitForChild("5k_dummies")
+    local dummies = folder:GetChildren()
+    if #dummies > 0 then
+        local dummy = dummies[math.random(1, #dummies)]
+        if dummy:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = dummy.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+        end
+    end
 end
 
--- Bouton ON/OFF
-toggleBtn.MouseButton1Click:Connect(function()
-	collecting = not collecting
-	if collecting then
-		toggleBtn.Text = "Auto Coins: ON"
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-		collectThread = task.spawn(collectLoop)
-	else
-		toggleBtn.Text = "Auto Coins: OFF"
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	end
+-- Boucle principale
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+
+        if autoCoins then
+            for _, folder in ipairs(folders) do
+                for _, dummy in ipairs(folder:GetChildren()) do
+                    local humanoid = dummy:FindFirstChild("Humanoid")
+                    if humanoid then
+                        local args = {humanoid, math.huge}
+                        pcall(function()
+                            event:FireServer(unpack(args))
+                        end)
+                    end
+                end
+            end
+        end
+
+        if autoDummy then
+            tpRandomDummy()
+        end
+    end
 end)
 
--- Bouton Fermer
+-- Boutons ON/OFF
+toggleCoinsBtn.MouseButton1Click:Connect(function()
+    autoCoins = not autoCoins
+    if autoCoins then
+        toggleCoinsBtn.Text = "Auto Coins: ON"
+        toggleCoinsBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    else
+        toggleCoinsBtn.Text = "Auto Coins: OFF"
+        toggleCoinsBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
+end)
+
+toggleDummyBtn.MouseButton1Click:Connect(function()
+    autoDummy = not autoDummy
+    if autoDummy then
+        toggleDummyBtn.Text = "Auto Dummy: ON"
+        toggleDummyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    else
+        toggleDummyBtn.Text = "Auto Dummy: OFF"
+        toggleDummyBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
+end)
+
+-- Fermer
 closeBtn.MouseButton1Click:Connect(function()
-	collecting = false
-	if collectThread then
-		task.cancel(collectThread)
-	end
-	gui:Destroy()
+    autoCoins = false
+    autoDummy = false
+    gui:Destroy()
 end)
