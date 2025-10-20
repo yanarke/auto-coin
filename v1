@@ -1,6 +1,7 @@
 -- GhoulzHub – Auto Coins (Stable / No TP)
 repeat task.wait() until game:IsLoaded()
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
 -- GUI principale
@@ -42,7 +43,7 @@ closeBtn.TextColor3 = Color3.new(1, 1, 1)
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextScaled = true
 
--- 📱 Draggable pour mobile et PC
+-- Draggable
 local UserInputService = game:GetService("UserInputService")
 local dragging = false
 local dragStart, startPos
@@ -66,38 +67,32 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 ------------------------------------------------------------
--- ⚙️ Auto Coins (sans TP)
+-- ⚙️ Auto Coins (Stable)
 ------------------------------------------------------------
 local collecting = false
 local collectThread
-local collected = {} -- éviter de retoucher la même pièce
 
 local function collectLoop()
 	while collecting do
 		local char = player.Character
 		if char and char:FindFirstChild("HumanoidRootPart") then
 			local hrp = char.HumanoidRootPart
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("TouchTransmitter") and obj.Parent and obj.Parent:IsA("BasePart") and not collected[obj.Parent] then
-					collected[obj.Parent] = true
-					pcall(function()
-						firetouchinterest(hrp, obj.Parent, 0)
-						firetouchinterest(hrp, obj.Parent, 1)
-					end)
-				end
-			end
+			local coinEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("CoinEvent")
+			-- FireServer pour collecter
+			pcall(function()
+				coinEvent:FireServer()
+			end)
 		end
-		task.wait(1.5) -- un petit délai pour éviter le spam
+		task.wait(1) -- délai pour éviter le spam
 	end
 end
 
--- 🎚 Bouton ON/OFF
+-- Bouton ON/OFF
 toggleBtn.MouseButton1Click:Connect(function()
 	collecting = not collecting
 	if collecting then
 		toggleBtn.Text = "Auto Coins: ON"
 		toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-		collected = {}
 		collectThread = task.spawn(collectLoop)
 	else
 		toggleBtn.Text = "Auto Coins: OFF"
@@ -105,7 +100,7 @@ toggleBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 🔴 Bouton Fermer
+-- Bouton Fermer
 closeBtn.MouseButton1Click:Connect(function()
 	collecting = false
 	if collectThread then
