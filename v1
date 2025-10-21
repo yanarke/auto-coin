@@ -82,50 +82,41 @@ main.InputEnded:Connect(function(input)
 	end
 end)
 
--- Auto Coins
+-- Auto Coins rapide
 local function runAutoCoins()
 	local coinEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("CoinEvent")
 	while autoCoins do
 		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 			pcall(function()
-				coinEvent:FireServer() -- collecte rapide à distance infinie
+				coinEvent:FireServer()
 			end)
 		end
 		task.wait(0.2)
 	end
 end
 
--- Auto Dummy (distance infinie)
+-- Auto Dummy pour 5k_dummies seulement
 local function runAutoDummy()
 	local dummyEventRef = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
-	local folders = {
-		map:WaitForChild("5k_dummies"),
-		map:WaitForChild("dummies")
-	}
+	local folder5k = map:WaitForChild("5k_dummies")
 	while autoDummy do
 		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 			local hrp = player.Character.HumanoidRootPart
-			-- Parcourir un dummy aléatoire de chaque dossier
-			for _, folder in ipairs(folders) do
-				local dummies = folder:GetChildren()
-				if #dummies > 0 then
-					local dummy = dummies[math.random(1, #dummies)]
-					local humanoid = dummy:FindFirstChild("Humanoid")
-					if humanoid then
-						local args = {humanoid, math.huge}
-						pcall(function()
-							dummyEventRef:FireServer(unpack(args))
-						end)
-					end
-				end
-			end
-			-- TP aléatoire sur un dummy 5k_dummies
-			local folder5k = map:WaitForChild("5k_dummies")
 			local dummies5k = folder5k:GetChildren()
 			if #dummies5k > 0 then
-				local dummyTP = dummies5k[math.random(1, #dummies5k)]
-				if dummyTP:FindFirstChild("HumanoidRootPart") then
-					hrp.CFrame = dummyTP.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+				-- toucher un dummy aléatoire
+				local dummy = dummies5k[math.random(1, #dummies5k)]
+				local humanoid = dummy:FindFirstChild("Humanoid")
+				if humanoid then
+					local args = {humanoid, math.huge}
+					pcall(function()
+						dummyEventRef:FireServer(unpack(args))
+					end)
+				end
+				-- TP aléatoire sur un dummy
+				local tpDummy = dummies5k[math.random(1, #dummies5k)]
+				if tpDummy:FindFirstChild("HumanoidRootPart") then
+					hrp.CFrame = tpDummy.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
 				end
 			end
 		end
