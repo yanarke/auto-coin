@@ -1,4 +1,3 @@
--- GhoulzHub – Auto Coins + Auto Dummy (stable)
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -6,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local map = workspace:WaitForChild("MAP")
 
--- Remplace par ton vrai CoinEvent et DummyEvent
+-- Les événements
 local coinEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("CoinEvent")
 local dummyEvent = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
 
@@ -14,7 +13,7 @@ local dummyEvent = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIl
 local autoCoins = false
 local autoDummy = false
 
--- GUI principale
+-- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "GhoulzHubCoins"
 gui.ResetOnSpawn = false
@@ -85,7 +84,7 @@ main.InputEnded:Connect(function(input)
 	end
 end)
 
--- Dossiers de dummies
+-- Tous les dossiers de dummies
 local folders = {
 	map:WaitForChild("5k_dummies"),
 	map:WaitForChild("dummies")
@@ -108,14 +107,21 @@ task.spawn(function()
 	while true do
 		task.wait(0.1)
 
-		-- Auto Coins
+		-- Auto Coins: FireServer sur tous les dummies
 		if autoCoins then
-			pcall(function()
-				coinEvent:FireServer()
-			end)
+			for _, folder in ipairs(folders) do
+				for _, dummy in ipairs(folder:GetChildren()) do
+					local humanoid = dummy:FindFirstChild("Humanoid")
+					if humanoid then
+						pcall(function()
+							coinEvent:FireServer(humanoid) -- On passe le humanoid pour que ça marche
+						end)
+					end
+				end
+			end
 		end
 
-		-- Auto Dummy
+		-- Auto Dummy: FireServer + TP aléatoire
 		if autoDummy then
 			for _, folder in ipairs(folders) do
 				for _, dummy in ipairs(folder:GetChildren()) do
