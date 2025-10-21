@@ -1,4 +1,4 @@
--- GhoulzHub – Auto Coins + Auto Dummy
+-- GhoulzHub – Auto Coins + Auto Dummy (réparé)
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -6,7 +6,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local map = workspace:WaitForChild("MAP")
-local event = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
+
+-- Remplace ici par ton vrai CoinEvent
+local coinEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("CoinEvent")
+local dummyEvent = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
 
 -- Flags
 local autoCoins = false
@@ -19,7 +22,7 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 280, 0, 210) -- agrandi pour bouton supplémentaire
+main.Size = UDim2.new(0, 280, 0, 210)
 main.Position = UDim2.new(0.5, -140, 0.5, -105)
 main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 main.BorderColor3 = Color3.fromRGB(255, 0, 0)
@@ -108,21 +111,33 @@ task.spawn(function()
     while true do
         task.wait(0.1)
 
+        -- Auto Coins
         if autoCoins then
             for _, folder in ipairs(folders) do
                 for _, dummy in ipairs(folder:GetChildren()) do
                     local humanoid = dummy:FindFirstChild("Humanoid")
                     if humanoid then
-                        local args = {humanoid, math.huge}
                         pcall(function()
-                            event:FireServer(unpack(args))
+                            coinEvent:FireServer() -- FireServer correct pour coins
                         end)
                     end
                 end
             end
         end
 
+        -- Auto Dummy
         if autoDummy then
+            for _, folder in ipairs(folders) do
+                for _, dummy in ipairs(folder:GetChildren()) do
+                    local humanoid = dummy:FindFirstChild("Humanoid")
+                    if humanoid then
+                        local args = {humanoid, math.huge}
+                        pcall(function()
+                            dummyEvent:FireServer(unpack(args))
+                        end)
+                    end
+                end
+            end
             tpRandomDummy()
         end
     end
