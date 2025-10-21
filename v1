@@ -7,7 +7,6 @@ local map = workspace:WaitForChild("MAP")
 
 -- Flags
 local autoCoins = false
-local auto5kDummy = false
 local autoDummy = false
 local autoDoubleDummy = false
 
@@ -18,8 +17,8 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 320, 0, 320)
-main.Position = UDim2.new(0.5, -160, 0.5, -160)
+main.Size = UDim2.new(0, 320, 0, 300)
+main.Position = UDim2.new(0.5, -160, 0.5, -150)
 main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 main.BorderColor3 = Color3.fromRGB(255, 0, 0)
 main.Active = true
@@ -42,18 +41,9 @@ toggleCoinsBtn.TextColor3 = Color3.new(1, 1, 1)
 toggleCoinsBtn.Font = Enum.Font.GothamBold
 toggleCoinsBtn.TextScaled = true
 
-local toggle5kBtn = Instance.new("TextButton", main)
-toggle5kBtn.Size = UDim2.new(0, 250, 0, 40)
-toggle5kBtn.Position = UDim2.new(0.5, -125, 0, 100)
-toggle5kBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-toggle5kBtn.Text = "Auto 5k Dummy: OFF"
-toggle5kBtn.TextColor3 = Color3.new(1, 1, 1)
-toggle5kBtn.Font = Enum.Font.GothamBold
-toggle5kBtn.TextScaled = true
-
 local toggleDummyBtn = Instance.new("TextButton", main)
 toggleDummyBtn.Size = UDim2.new(0, 250, 0, 40)
-toggleDummyBtn.Position = UDim2.new(0.5, -125, 0, 150)
+toggleDummyBtn.Position = UDim2.new(0.5, -125, 0, 100)
 toggleDummyBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 toggleDummyBtn.Text = "Auto Dummy: OFF"
 toggleDummyBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -62,7 +52,7 @@ toggleDummyBtn.TextScaled = true
 
 local toggleDoubleBtn = Instance.new("TextButton", main)
 toggleDoubleBtn.Size = UDim2.new(0, 250, 0, 40)
-toggleDoubleBtn.Position = UDim2.new(0.5, -125, 0, 200)
+toggleDoubleBtn.Position = UDim2.new(0.5, -125, 0, 150)
 toggleDoubleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 toggleDoubleBtn.Text = "Auto Double Dummy: OFF"
 toggleDoubleBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -71,7 +61,7 @@ toggleDoubleBtn.TextScaled = true
 
 local closeBtn = Instance.new("TextButton", main)
 closeBtn.Size = UDim2.new(0, 250, 0, 35)
-closeBtn.Position = UDim2.new(0.5, -125, 0, 260)
+closeBtn.Position = UDim2.new(0.5, -125, 0, 210)
 closeBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
 closeBtn.Text = "Fermer"
 closeBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -105,34 +95,15 @@ local function runAutoCoins()
 	local coinEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("CoinEvent")
 	while autoCoins do
 		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			pcall(function() coinEvent:FireServer() end)
+			pcall(function()
+				coinEvent:FireServer()
+			end)
 		end
 		task.wait(0.2)
 	end
 end
 
--- Auto 5k Dummy
-local function run5kDummy()
-	local dummyEvent = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
-	local folder = map:WaitForChild("5k_dummies")
-	while auto5kDummy do
-		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			local hrp = player.Character.HumanoidRootPart
-			local dummies = folder:GetChildren()
-			if #dummies > 0 then
-				local dummy = dummies[math.random(1, #dummies)]
-				local humanoid = dummy:FindFirstChild("Humanoid")
-				if humanoid then
-					pcall(function() dummyEvent:FireServer(humanoid, math.huge) end)
-				end
-				hrp.CFrame = dummy.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
-			end
-		end
-		task.wait(0.1)
-	end
-end
-
--- Auto Dummy (normal)
+-- Auto Dummy (dossier dummies)
 local function runDummy()
 	local dummyEvent = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
 	local folder = map:WaitForChild("dummies")
@@ -144,7 +115,9 @@ local function runDummy()
 				local dummy = dummies[math.random(1, #dummies)]
 				local humanoid = dummy:FindFirstChild("Humanoid")
 				if humanoid then
-					pcall(function() dummyEvent:FireServer(humanoid, math.huge) end)
+					pcall(function()
+						dummyEvent:FireServer(humanoid, math.huge)
+					end)
 				end
 			end
 		end
@@ -152,7 +125,7 @@ local function runDummy()
 	end
 end
 
--- Auto Double Dummy (5k + normal)
+-- Auto Double Dummy (5k + dummies)
 local function runDoubleDummy()
 	local dummyEvent = ReplicatedStorage:WaitForChild("jdskhfsIIIllliiIIIdchgdIiIIIlIlIli")
 	local folder5k = map:WaitForChild("5k_dummies")
@@ -160,7 +133,7 @@ local function runDoubleDummy()
 	while autoDoubleDummy do
 		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 			local hrp = player.Character.HumanoidRootPart
-			-- 5k dummy
+			-- TP et frappe 5k dummy
 			local dummies5k = folder5k:GetChildren()
 			if #dummies5k > 0 then
 				local dummy5k = dummies5k[math.random(1, #dummies5k)]
@@ -171,12 +144,13 @@ local function runDoubleDummy()
 				end
 			end
 			task.wait(0.1)
-			-- normal dummy
+			-- TP et frappe dummy normal
 			local dummies = folder:GetChildren()
 			if #dummies > 0 then
 				local dummy = dummies[math.random(1, #dummies)]
 				local humanoid = dummy:FindFirstChild("Humanoid")
 				if humanoid then
+					hrp.CFrame = dummy.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
 					pcall(function() dummyEvent:FireServer(humanoid, math.huge) end)
 				end
 			end
@@ -195,18 +169,6 @@ toggleCoinsBtn.MouseButton1Click:Connect(function()
 	else
 		toggleCoinsBtn.Text = "Auto Coins: OFF"
 		toggleCoinsBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	end
-end)
-
-toggle5kBtn.MouseButton1Click:Connect(function()
-	auto5kDummy = not auto5kDummy
-	if auto5kDummy then
-		toggle5kBtn.Text = "Auto 5k Dummy: ON"
-		toggle5kBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-		task.spawn(run5kDummy)
-	else
-		toggle5kBtn.Text = "Auto 5k Dummy: OFF"
-		toggle5kBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	end
 end)
 
@@ -234,10 +196,8 @@ toggleDoubleBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Fermer
 closeBtn.MouseButton1Click:Connect(function()
 	autoCoins = false
-	auto5kDummy = false
 	autoDummy = false
 	autoDoubleDummy = false
 	gui:Destroy()
